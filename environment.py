@@ -18,17 +18,17 @@ def step(state, action):
     if action == 1:
         state.playersum = drawcard(state.playersum)
         if state.playersum < 1 or state.playersum > 21:
-            return "terminal", -1
+            return "terminal", -1.0
         else:
             return state, 0
     elif action == 0:
         while(state.dealercard < 17):
             state.dealercard = drawcard(state.dealercard)
             if state.dealercard < 1 or state.dealercard > 21:
-                return "terminal", 1
+                return "terminal", 1.0
         if state.dealercard > state.playersum:
-            return "terminal", -1
+            return "terminal", -1.0
         elif state.dealercard < state.playersum:
-            return "terminal", 1
+            return "terminal", 1.0
         else:
-            return "terminal", 0
+            return "terminal", 0.0
