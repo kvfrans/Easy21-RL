@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from sarsa_eligibility import *
+from sarsa_approximation import *
 from montecarlo import *
 
 # value[action][dealercard][playersum] is the value function, table lookup should work with so little states
@@ -18,30 +18,61 @@ value = np.load("montecarlo.npy")
 
 testlooking = None
 
-# calculate MSQ per lambda
-msq = np.zeros(11)
-for k in xrange(11):
-    td_value = np.zeros((2,11,22))
-    td_counter = np.zeros((2,11,22))
-    for i in xrange(1000):
-        td_value, td_counter = sarsa(td_value,td_counter,k*0.1)
-    msq[k] = np.sum(np.square(value - td_value)) / (2.0*11*22)
-    testlooking = td_value
+# # calculate MSQ per lambda
+# msq = np.zeros(11)
+# for k in xrange(11):
+#     td_value = np.zeros((2,11,22))
+#     td_counter = np.zeros((2,11,22))
+#     for i in xrange(1000):
+#         td_value, td_counter = sarsa(td_value,td_counter,k*0.1)
+#     msq[k] = np.sum(np.square(value - td_value)) / (2.0*11*22)
+#     testlooking = td_value
+#
+# #calculate MSQ for lambda 0 & 1, over episodes
+# msq = np.zeros((2,100))
+# for k in xrange(2):
+#     td_value = np.zeros((2,11,22))
+#     td_counter = np.zeros((2,11,22))
+#     for i in xrange(100000):
+#         td_value, td_counter = sarsa(td_value,td_counter,k*1)
+#         if i % 1000 == 0:
+#             msq[k,(i / 1000)] = np.sum(np.square(value - td_value)) / (2.0*11*22)
 
-#calculate MSQ for lambda 0 & 1, over episodes
-msq = np.zeros((2,100))
+
+# # calculate MSQ per lambda for feature approximation
+# msq = np.zeros(11)
+# for k in xrange(11):
+#     td_value = np.zeros((2,3,6))
+#     for i in xrange(1000):
+#         td_value = sarsa(td_value,0.5)
+#
+#     builtvalue = np.zeros((2,11,22))
+#     for x in xrange(2):
+#         for y in xrange(10):
+#             for z in xrange(21):
+#                 builtvalue[x,(y+1),(z+1)] = getvalue(td_value,x,(y+1),(z+1))
+#     msq[k] = np.sum(np.square(value - builtvalue)) / (2.0*11*22)
+
+
+#calculate MSQ for lambda 0 & 1, over episodes for feature approximation
+msq = np.zeros((2,10))
 for k in xrange(2):
-    td_value = np.zeros((2,11,22))
-    td_counter = np.zeros((2,11,22))
-    for i in xrange(100000):
-        td_value, td_counter = sarsa(td_value,td_counter,k*1)
+    td_value = np.zeros((2,3,6))
+    for i in xrange(10000):
+        td_value = sarsa(td_value,k*1)
         if i % 1000 == 0:
-            msq[k,(i / 1000)] = np.sum(np.square(value - td_value)) / (2.0*11*22)
+            builtvalue = np.zeros((2,11,22))
+            for x in xrange(2):
+                for y in xrange(10):
+                    for z in xrange(21):
+                        builtvalue[x,(y+1),(z+1)] = getvalue(td_value,x,(y+1),(z+1))
+            msq[k,(i / 1000)] = np.sum(np.square(value - builtvalue)) / (2.0*11*22)
+
 
 
 
 # plot monte-carlo value func
-# bestval = np.amax(value,axis=0)
+# bestval = np.amax(testlooking,axis=0)
 # bestval = np.amax(testlooking,axis=0)
 # fig = plt.figure()
 # ha = fig.add_subplot(111, projection='3d')
@@ -53,14 +84,14 @@ for k in xrange(2):
 # ha.set_xlabel("player current sum")
 # ha.set_zlabel("value of state")
 
-# # plot msq on lambda scaling
+# plot msq on lambda scaling
 # plt.plot(np.arange(11) * 0.1,msq)
 # plt.ylabel("Mean Squared Error")
 # plt.xlabel("lambda scaling")
 
 # plot msq on episodes
-plt.plot(np.arange(100) * 1000,msq[0],label="lambda 0")
-plt.plot(np.arange(100) * 1000,msq[1],label="lambda 1")
+plt.plot(np.arange(10) * 1000,msq[0],label="lambda 0")
+plt.plot(np.arange(10) * 1000,msq[1],label="lambda 1")
 plt.ylabel("Mean Squared Error")
 plt.xlabel("episodes")
 
